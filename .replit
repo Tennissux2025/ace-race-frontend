@@ -1,3 +1,15 @@
 run = "npm run dev"
 language = "nodejs"
 entrypoint = "src/main.jsx"
+modules = ["nodejs-20"]
+
+[[ports]]
+localPort = 3000
+
+[[ports]]
+localPort = 5173
+externalPort = 80
+exposeLocalhost = true
+
+[nix]
+packages = ["lsof"]
