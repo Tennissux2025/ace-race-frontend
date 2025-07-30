@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,14 +18,16 @@ export default function App() {
   const [topSelections, setTopSelections] = useState([]);
   const [bottomSelections, setBottomSelections] = useState([]);
 
+  const API_BASE = "https://ace-race-api--ighidirmic.repl.co";
+
   useEffect(() => {
     setLoading(true);
-    axios.get("http://localhost:8000/tournaments").then((res) => {
+    axios.get(`${API_BASE}/tournaments`).then((res) => {
       setTournaments(res.data);
-      axios.get(`http://localhost:8000/selections/${userId}`).then((selRes) => {
+      axios.get(`${API_BASE}/selections/${userId}`).then((selRes) => {
         setUserSelections(selRes.data);
       });
-      axios.get("http://localhost:8000/leaderboard").then((lbRes) => {
+      axios.get(`${API_BASE}/leaderboard`).then((lbRes) => {
         setLeaderboard(lbRes.data.sort((a, b) => b[sortKey] - a[sortKey]));
       });
       setLoading(false);
@@ -35,7 +36,7 @@ export default function App() {
 
   const fetchDraw = (id) => {
     setSelectedTournament(id);
-    axios.get(`http://localhost:8000/tournament/${id}/draw`).then((res) => {
+    axios.get(`${API_BASE}/tournament/${id}/draw`).then((res) => {
       const enrichedDraw = res.data.map((entry) => ({
         ...entry,
         nationality: "🇪🇸",
@@ -82,7 +83,7 @@ export default function App() {
 
     try {
       await Promise.all(
-        selections.map((sel) => axios.post("http://localhost:8000/selections", sel))
+        selections.map((sel) => axios.post(`${API_BASE}/selections`, sel))
       );
       alert("✅ Picks submitted successfully!");
       setSelectedTournament(null);
