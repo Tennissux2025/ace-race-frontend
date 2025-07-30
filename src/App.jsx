@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
+// ✅ This is your live backend API URL from Replit
 const API_BASE = "https://11cfeae5-933f-4588-9955-b779a6137201-00-26hop5mjii2go.worf.replit.dev";
 
 export default function App() {
@@ -158,11 +159,6 @@ export default function App() {
             </tr>
           ))}
         </tbody>
-      </table>
-    </div>
-  );
-}
-
       </table>
     </div>
   );
