@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
+const API_BASE = "https://11cfeae5-933f-4588-9955-b779a6137201-00-26hop5mjii2go.worf.replit.dev";
+
 export default function App() {
   const [userId, setUserId] = useState(() => {
     const user = JSON.parse(localStorage.getItem("user"));
@@ -17,20 +19,20 @@ export default function App() {
   const [sortKey, setSortKey] = useState("week_points");
 
   useEffect(() => {
-    axios.get("http://localhost:8000/tournaments").then((res) => {
+    axios.get(`${API_BASE}/tournaments`).then((res) => {
       setTournaments(res.data);
     });
-    axios.get(`http://localhost:8000/selections/${userId}`).then((res) => {
+    axios.get(`${API_BASE}/selections/${userId}`).then((res) => {
       setUserSelections(res.data);
     });
-    axios.get("http://localhost:8000/leaderboard").then((res) => {
+    axios.get(`${API_BASE}/leaderboard`).then((res) => {
       setLeaderboard(res.data.sort((a, b) => b[sortKey] - a[sortKey]));
     });
   }, [sortKey, userId]);
 
   const fetchDraw = (tournamentId) => {
     setSelectedTournament(tournamentId);
-    axios.get(`http://localhost:8000/tournament/${tournamentId}/draw`).then((res) => {
+    axios.get(`${API_BASE}/tournament/${tournamentId}/draw`).then((res) => {
       const enriched = res.data.map((player, i) => ({
         ...player,
         nationality: "🇪🇸",
@@ -71,7 +73,7 @@ export default function App() {
     }));
 
     try {
-      await Promise.all(selections.map((sel) => axios.post("http://localhost:8000/selections", sel)));
+      await Promise.all(selections.map((sel) => axios.post(`${API_BASE}/selections`, sel)));
       alert("✅ Picks submitted!");
       setSelectedTournament(null);
     } catch {
@@ -156,6 +158,11 @@ export default function App() {
             </tr>
           ))}
         </tbody>
+      </table>
+    </div>
+  );
+}
+
       </table>
     </div>
   );
