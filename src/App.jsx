@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-// ✅ Pointing to your live backend
 const API_BASE = "https://11cfeae5-933f-4588-9955-b779a6137201-00-26hop5mjii2go.worf.replit.dev";
 
 export default function App() {
@@ -35,15 +34,11 @@ export default function App() {
 
   useEffect(() => {
     if (!user) return;
-    axios.get(`${API_BASE}/tournaments`).then((res) => {
-      setTournaments(res.data);
-    });
-    axios.get(`${API_BASE}/selections/${user.id}`).then((res) => {
-      setUserSelections(res.data);
-    });
-    axios.get(`${API_BASE}/leaderboard`).then((res) => {
-      setLeaderboard(res.data.sort((a, b) => b[sortKey] - a[sortKey]));
-    });
+    axios.get(`${API_BASE}/tournaments`).then((res) => setTournaments(res.data));
+    axios.get(`${API_BASE}/selections/${user.id}`).then((res) => setUserSelections(res.data));
+    axios.get(`${API_BASE}/leaderboard`).then((res) =>
+      setLeaderboard(res.data.sort((a, b) => b[sortKey] - a[sortKey]))
+    );
   }, [sortKey, user]);
 
   const fetchDraw = (tournamentId) => {
@@ -57,6 +52,8 @@ export default function App() {
         surface: ["Clay", "Grass", "Hard"][i % 3],
       }));
       setDraw(enriched);
+      setTopSelections([]);
+      setBottomSelections([]);
     });
   };
 
@@ -95,6 +92,18 @@ export default function App() {
     } catch {
       alert("❌ Submission failed.");
     }
+  };
+
+  const groupedSelections = userSelections.reduce((acc, sel) => {
+    if (!acc[sel.tournament_id]) acc[sel.tournament_id] = [];
+    acc[sel.tournament_id].push(sel);
+    return acc;
+  }, {});
+
+  const canEditTournament = (tournamentId) => {
+    const tournament = tournaments.find((t) => t.id === tournamentId);
+    if (!tournament) return false;
+    return new Date(tournament.start_date) > new Date();
   };
 
   if (!user) return <div>Loading...</div>;
@@ -136,7 +145,7 @@ export default function App() {
   return (
     <div>
       <h1>Ace Race: Pick Your Players</h1>
-      {user && <p style={{ fontStyle: "italic" }}>Welcome, {user.name}!</p>}
+      <p style={{ fontStyle: "italic" }}>Welcome, {user.name}!</p>
 
       <h2>Weekly Tournaments</h2>
       <ul>
@@ -150,9 +159,19 @@ export default function App() {
 
       <h2>Past Selections</h2>
       <ul>
-        {userSelections.map((sel) => (
-          <li key={sel.id}>
-            Tournament {sel.tournament_id} — Player {sel.player_id} ({sel.draw_half})
+        {Object.entries(groupedSelections).map(([tournamentId, picks]) => (
+          <li key={tournamentId}>
+            <strong>{tournamentId}</strong> —
+            {canEditTournament(tournamentId) && (
+              <button onClick={() => fetchDraw(tournamentId)} style={{ marginLeft: "10px" }}>📝 Edit Picks</button>
+            )}
+            <ul>
+              {picks.map((sel, i) => (
+                <li key={i}>
+                  Player {sel.player_id} ({sel.draw_half})
+                </li>
+              ))}
+            </ul>
           </li>
         ))}
       </ul>
@@ -181,3 +200,4 @@ export default function App() {
     </div>
   );
 }
+
