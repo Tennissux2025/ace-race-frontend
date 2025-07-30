@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-// ✅ This is your live backend API URL from Replit
+// ✅ Pointing to your live backend
 const API_BASE = "https://11cfeae5-933f-4588-9955-b779a6137201-00-26hop5mjii2go.worf.replit.dev";
 
 export default function App() {
-  const [userId, setUserId] = useState(() => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    return user?.id || "demo-user";
+  const [user, setUser] = useState(() => {
+    const saved = localStorage.getItem("user");
+    return saved ? JSON.parse(saved) : null;
   });
 
   const [tournaments, setTournaments] = useState([]);
@@ -20,16 +20,31 @@ export default function App() {
   const [sortKey, setSortKey] = useState("week_points");
 
   useEffect(() => {
+    if (!user) {
+      const name = prompt("Welcome! What’s your name?");
+      if (name) {
+        const newUser = {
+          id: `user-${Math.floor(Math.random() * 1000000)}`,
+          name,
+        };
+        localStorage.setItem("user", JSON.stringify(newUser));
+        setUser(newUser);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!user) return;
     axios.get(`${API_BASE}/tournaments`).then((res) => {
       setTournaments(res.data);
     });
-    axios.get(`${API_BASE}/selections/${userId}`).then((res) => {
+    axios.get(`${API_BASE}/selections/${user.id}`).then((res) => {
       setUserSelections(res.data);
     });
     axios.get(`${API_BASE}/leaderboard`).then((res) => {
       setLeaderboard(res.data.sort((a, b) => b[sortKey] - a[sortKey]));
     });
-  }, [sortKey, userId]);
+  }, [sortKey, user]);
 
   const fetchDraw = (tournamentId) => {
     setSelectedTournament(tournamentId);
@@ -66,7 +81,7 @@ export default function App() {
 
   const submitPicks = async () => {
     const selections = [...topSelections, ...bottomSelections].map((entry) => ({
-      user_id: userId,
+      user_id: user.id,
       tournament_id: selectedTournament,
       player_id: entry.player_id,
       draw_half: entry.draw_half,
@@ -81,6 +96,8 @@ export default function App() {
       alert("❌ Submission failed.");
     }
   };
+
+  if (!user) return <div>Loading...</div>;
 
   if (selectedTournament) {
     return (
@@ -119,6 +136,7 @@ export default function App() {
   return (
     <div>
       <h1>Ace Race: Pick Your Players</h1>
+      {user && <p style={{ fontStyle: "italic" }}>Welcome, {user.name}!</p>}
 
       <h2>Weekly Tournaments</h2>
       <ul>
