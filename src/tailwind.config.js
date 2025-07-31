@@ -4,3 +4,4 @@ module.exports = {
     autoprefixer: {},
   },
 };
+Delete misplaced tailwind.config.js from /src
