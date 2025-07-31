@@ -50,6 +50,7 @@ export default function App() {
         age: 25,
         handedness: i % 2 === 0 ? "Right" : "Left",
         surface: ["Clay", "Grass", "Hard"][i % 3],
+        id: `${player.player_id}-${player.draw_half}`, // unique key
       }));
       setDraw(enriched);
       setTopSelections([]);
@@ -62,8 +63,9 @@ export default function App() {
     const selections = isTop ? topSelections : bottomSelections;
     const setSelections = isTop ? setTopSelections : setBottomSelections;
 
-    if (selections.find((p) => p.player_id === entry.player_id)) {
-      setSelections(selections.filter((p) => p.player_id !== entry.player_id));
+    const alreadySelected = selections.find((p) => p.id === entry.id);
+    if (alreadySelected) {
+      setSelections(selections.filter((p) => p.id !== entry.id));
     } else if (selections.length < 2) {
       setSelections([...selections, entry]);
     } else {
@@ -72,8 +74,8 @@ export default function App() {
   };
 
   const isSelected = (entry) => {
-    const selections = entry.draw_half === "Top" ? topSelections : bottomSelections;
-    return selections.find((p) => p.player_id === entry.player_id);
+    const list = entry.draw_half === "Top" ? topSelections : bottomSelections;
+    return list.some((p) => p.id === entry.id);
   };
 
   const submitPicks = async () => {
@@ -110,31 +112,34 @@ export default function App() {
 
   if (selectedTournament) {
     return (
-      <div>
+      <div className="p-4">
         <h2>Select 2 players from each half</h2>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
           {draw.map((entry) => (
             <div
-              key={entry.player_id}
+              key={entry.id}
+              onClick={() => toggleSelection(entry)}
               style={{
                 border: isSelected(entry) ? "2px solid green" : "1px solid #ccc",
                 padding: "10px",
                 cursor: "pointer",
                 width: "180px",
               }}
-              onClick={() => toggleSelection(entry)}
             >
               <strong>Player ID:</strong> {entry.player_id}<br />
               <strong>Nationality:</strong> {entry.nationality}<br />
               <strong>Age:</strong> {entry.age}<br />
-              <strong>Hand:</strong> {entry.handedness}<br />
+              <strong>Hand:</strong> {entry.hand}<br />
               <strong>Surface:</strong> {entry.surface}<br />
               <strong>Half:</strong> {entry.draw_half}
             </div>
           ))}
         </div>
         <br />
-        <button onClick={submitPicks} disabled={topSelections.length !== 2 || bottomSelections.length !== 2}>
+        <button
+          onClick={submitPicks}
+          disabled={topSelections.length !== 2 || bottomSelections.length !== 2}
+        >
           Submit Picks
         </button>
         <button onClick={() => setSelectedTournament(null)}>Back</button>
@@ -143,7 +148,7 @@ export default function App() {
   }
 
   return (
-    <div>
+    <div className="p-4">
       <h1>Ace Race: Pick Your Players</h1>
       <p style={{ fontStyle: "italic" }}>Welcome, {user.name}!</p>
 
@@ -200,4 +205,3 @@ export default function App() {
     </div>
   );
 }
-
